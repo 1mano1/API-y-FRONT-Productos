@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API y FRONT Productos - Omar Imanol Rodriguez R.</title>
+</head>
+<body>
+    <h1>Inventario</h1>
+
+    <h2>Agregar Producto</h2>
+    <input type="text" id="codigo" placeholder="Código">
+    <input type="text" id="nombre" placeholder="Nombre">
+    <input type="number" id="precio" placeholder="Precio">
+    <input type="number" id="cantidad" placeholder="Cantidad">
+    <button id="agregar">Agregar</button>
+
+    <h2>Eliminar Producto</h2>
+    <input type="text" id="codigoEliminar" placeholder="Código a eliminar">
+    <button id="eliminar">Eliminar</button>
+
+    <h2>Buscar Producto</h2>
+    <input type="text" id="codigoBuscar" placeholder="Código a buscar">
+    <button id="buscar">Buscar</button>
+
+    <h2>Listado</h2>
+    <button id="listar">Listar productos</button>
+
+    <div id="resultado"></div>
+
+    <script>
+        document.getElementById('agregar').addEventListener('click', () => {
+            const codigo = document.getElementById('codigo').value;
+            const nombre = document.getElementById('nombre').value;
+            const precio = parseFloat(document.getElementById('precio').value);
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+
+            fetch('http://localhost:3002/producto', {
+                method: 'POST',
+                body: JSON.stringify({ codigo, nombre, precio, cantidad }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.tipo === 1) {
+                    document.getElementById('resultado').innerHTML = `<p>Producto agregado con código: ${data.codigo}</p>`;
+                } else {
+                    document.getElementById('resultado').innerHTML = `<p>Ya existe un producto con ese código.</p>`;
+                }
+            });
+        });
+
+        document.getElementById('eliminar').addEventListener('click', () => {
+            const codigo = document.getElementById('codigoEliminar').value;
+
+            fetch(`http://localhost:3002/producto/${codigo}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.tipo === 1) {
+                    const p = data.producto;
+                    document.getElementById('resultado').innerHTML = `<p>Producto eliminado: ${p.codigo} - ${p.nombre}</p>`;
+                } else {
+                    document.getElementById('resultado').innerHTML = `<p>Producto no encontrado.</p>`;
+                }
+            });
+        });
+
+        document.getElementById('buscar').addEventListener('click', () => {
+            const codigo = document.getElementById('codigoBuscar').value;
+
+            fetch(`http://localhost:3002/producto/${codigo}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.tipo === 1) {
+                    const p = data.producto;
+                    document.getElementById('resultado').innerHTML = `<p>Producto encontrado: ${p.codigo} - ${p.nombre}, Precio: ${p.precio}, Cantidad: ${p.cantidad}</p>`;
+                } else {
+                    document.getElementById('resultado').innerHTML = `<p>Producto no encontrado.</p>`;
+                }
+            });
+        });
+
+        document.getElementById('listar').addEventListener('click', () => {
+            fetch('http://localhost:3002/producto')
+            .then(res => res.json())
+            .then(data => {
+                let html = '<ul>';
+                data.forEach(p => {
+                    html += `<li>${p.codigo} - ${p.nombre}, Precio: ${p.precio}, Cantidad: ${p.cantidad}</li>`;
+                });
+                html += '</ul>';
+                document.getElementById('resultado').innerHTML = html;
+            });
+        });
+    </script>
+</body>
+</html>
